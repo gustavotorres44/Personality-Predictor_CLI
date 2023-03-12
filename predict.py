@@ -5,30 +5,30 @@ import nltk
 import string
 from nltk.classify import NaiveBayesClassifier
 
-data_set = pd.read_csv("mbti_1.csv")
+data = pd.read_csv("mbti_1.csv")
 
-all_posts = pd.DataFrame()
+posts = pd.DataFrame()
 
-types = np.unique(np.array(data_set['type']))
-total = data_set.groupby(['type']).count() * 50
+unique_types = np.unique(np.array(data_set['type']))
+count = data_set.groupby(['type']).count() * 50
 
 # Organizing data
-for j in types:
-    temp1 = data_set[data_set['type'] == j]['posts']
-    temp2 = []
-    for i in temp1:
-        temp2 += i.split('|||')
-    temp3 = pd.Series(temp2)
-    all_posts[j] = temp3
+for j in unique_types:
+    t1 = data_set[data_set['type'] == j]['posts']
+    t2 = []
+    for i in t1:
+        t2 += i.split('|||')
+    t3 = pd.Series(t2)
+    all_posts[j] = t3
 
-useless_words = nltk.corpus.stopwords.words("english") + list(string.punctuation)
+stop_words = nltk.corpus.stopwords.words("english") + list(string.punctuation)
 
 
 def build_bag_of_words_features_filtered(words):
     words = nltk.word_tokenize(words)
     return {
         word: 1 for word in words \
-        if not word in useless_words}
+        if not word in stop_words}
 
 
 ##### Introverted and Extroverted
@@ -36,23 +36,23 @@ def build_bag_of_words_features_filtered(words):
 # Features for the bag of words model
 features = []
 for j in types:
-    temp1 = all_posts[j]
-    temp1 = temp1.dropna()  # not all the personality types have same number of files
+    t1 = all_posts[j]
+    t1 = t1.dropna()  # not all the personality types have same number of files
     if ('I' in j):
         features += [[(build_bag_of_words_features_filtered(i), 'introvert') \
-                      for i in temp1]]
+                      for i in t1]]
     if ('E' in j):
         features += [[(build_bag_of_words_features_filtered(i), 'extrovert') \
-                      for i in temp1]]
+                      for i in t1]]
 
-split = []
+split_words = []
 for i in range(16):
-    split += [len(features[i]) * 0.8]
-split = np.array(split, dtype=int)
+    split_words += [len(features[i]) * 0.8]
+split_words = np.array(split_words, dtype=int)
 
-train = []
+train_data = []
 for i in range(16):
-    train += features[i][:split[i]]
+    train_data += features[i][:split[i]]
 
 IntroExtro = NaiveBayesClassifier.train(train)
 

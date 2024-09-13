@@ -232,7 +232,7 @@ def tellmemyMBTI(input, name, traasits=[]):
     return traasits
 
 
-writings = open("charlotte.txt")
+writings = open("guto.txt")
 writing = writings.readlines()
 writing = [line.rstrip() for line in writing]
 print(tellmemyMBTI(writing, "Charlotte"))
